@@ -1,0 +1,28 @@
+{
+  "name": "mastra-myagents",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tsx src/mastra/index.ts",
+    "mastra:dev": "mastra dev",
+    "build": "mastra build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.8.1",
+  "devDependencies": {
+    "@types/node": "^24.2.0",
+    "mastra": "0.0.0-ai-v5-20250801192614",
+    "tsx": "^4.20.3",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^2.0.1",
+    "@mastra/core": "0.0.0-ai-v5-20250801192614",
+    "dotenv": "^17.2.1",
+    "zod": "^3.25.76"
+  }
+}
