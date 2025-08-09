@@ -2,8 +2,9 @@ import { evaluate } from '@mastra/core/eval';
 import { registerHook, AvailableHooks } from '@mastra/core/hooks';
 import { TABLE_EVALS } from '@mastra/core/storage';
 import { checkEvalStorageFields } from '@mastra/core/utils';
-import { Agent, Mastra, generateEmptyFromSchema, Telemetry } from '@mastra/core';
+import { Agent, createTool, Mastra, generateEmptyFromSchema, Telemetry } from '@mastra/core';
 import { createOpenAI } from '@ai-sdk/openai';
+import { z, ZodFirstPartyTypeKind } from 'zod';
 import dotenv from 'dotenv';
 import crypto, { randomUUID } from 'crypto';
 import { readFile } from 'fs/promises';
@@ -16,7 +17,6 @@ import { join as join$1 } from 'path';
 import { RuntimeContext } from '@mastra/core/runtime-context';
 import { isVercelTool, Tool } from '@mastra/core/tools';
 import { createV4CompatibleResponse, Agent as Agent$1 } from '@mastra/core/agent';
-import { z, ZodFirstPartyTypeKind } from 'zod';
 import util from 'util';
 import { Buffer as Buffer$1 } from 'buffer';
 import { A2AError } from '@mastra/core/a2a';
@@ -27,10 +27,33 @@ dotenv.config();
 const openai = createOpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
+const fetchWebTool = createTool({
+  id: "fetch-web",
+  description: "Fetches web content from a given URL.",
+  inputSchema: z.object({
+    url: z.string().describe("The URL to fetch content from")
+  }),
+  outputSchema: z.string().describe("The content fetched from the URL"),
+  execute: async ({ context }) => {
+    const url = context.url;
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch ${url}: ${response.statusText}`);
+    }
+    const text = await response.text();
+    return text;
+  }
+});
 const openAiAgent = new Agent({
   name: "OpenAI Agent",
-  instructions: "An agent that uses OpenAI's API to generate responses.",
-  model: openai("gpt-4o-mini")
+  instructions: `
+        An agent that uses OpenAI's API to generate responses.
+        if the user asks for web content, use the fetchWeb tool to retrieve it.
+        `,
+  model: openai("gpt-4o-mini"),
+  tools: {
+    fetchWeb: fetchWebTool
+  }
 });
 
 globalThis.___MASTRA_TELEMETRY___ = true;
