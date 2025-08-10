@@ -4,6 +4,7 @@ import { TABLE_EVALS } from '@mastra/core/storage';
 import { checkEvalStorageFields } from '@mastra/core/utils';
 import { Agent, createTool, Mastra, generateEmptyFromSchema, Telemetry } from '@mastra/core';
 import { createOpenAI } from '@ai-sdk/openai';
+import { extractLinksFromUrl } from './tools/011924e6-0e0b-4063-8058-f56ae0f6355b.mjs';
 import { z, ZodFirstPartyTypeKind } from 'zod';
 import dotenv from 'dotenv';
 import crypto, { randomUUID } from 'crypto';
@@ -22,10 +23,28 @@ import { Buffer as Buffer$1 } from 'buffer';
 import { A2AError } from '@mastra/core/a2a';
 import { ReadableStream as ReadableStream$1 } from 'stream/web';
 import { tools } from './tools.mjs';
+import 'jsdom';
 
 dotenv.config();
 const openai = createOpenAI({
   apiKey: process.env.OPENAI_API_KEY
+});
+const extractLinks = createTool({
+  id: "extract-links",
+  description: "Extracts links from a given URL.",
+  inputSchema: z.object({
+    url: z.string().describe("The URL to extract links from")
+  }),
+  outputSchema: z.array(z.string()).describe("An array of extracted links"),
+  execute: async ({ context }) => {
+    const url = context.url;
+    try {
+      const links = await extractLinksFromUrl(url);
+      return links;
+    } catch (error) {
+      throw new Error(`Failed to extract links from ${url}: ${error.message}`);
+    }
+  }
 });
 const fetchWebTool = createTool({
   id: "fetch-web",
@@ -52,7 +71,8 @@ const openAiAgent = new Agent({
         `,
   model: openai("gpt-4o-mini"),
   tools: {
-    fetchWeb: fetchWebTool
+    fetchWeb: fetchWebTool,
+    extractLinks
   }
 });
 

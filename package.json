@@ -14,6 +14,7 @@
   "license": "ISC",
   "packageManager": "pnpm@10.8.1",
   "devDependencies": {
+    "@types/jsdom": "^21.1.7",
     "@types/node": "^24.2.0",
     "mastra": "0.0.0-ai-v5-20250801192614",
     "tsx": "^4.20.3",
@@ -24,6 +25,7 @@
     "@mastra/core": "0.0.0-ai-v5-20250801192614",
     "@mastra/deployer-vercel": "^0.11.10",
     "dotenv": "^17.2.1",
+    "jsdom": "^26.1.0",
     "zod": "^3.25.76"
   }
 }

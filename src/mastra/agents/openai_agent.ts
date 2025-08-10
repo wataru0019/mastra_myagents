@@ -1,5 +1,6 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import { Agent } from "@mastra/core";
+import { extractLinksFromUrl } from "../tools";
 import { createTool } from "@mastra/core";
 import { z } from "zod";
 import dotenv from "dotenv";
@@ -7,6 +8,24 @@ dotenv.config();
 
 const openai = createOpenAI({
     apiKey: process.env.OPENAI_API_KEY,
+})
+
+const extractLinks = createTool({
+    id: "extract-links",
+    description: "Extracts links from a given URL.",
+    inputSchema: z.object({
+        url: z.string().describe("The URL to extract links from")
+    }),
+    outputSchema: z.array(z.string()).describe("An array of extracted links"),
+    execute: async ({ context }) => {
+        const url = context.url;
+        try {
+            const links = await extractLinksFromUrl(url);
+            return links;
+        } catch (error) {
+            throw new Error(`Failed to extract links from ${url}: ${error.message}`);
+        }
+    }
 })
 
 const fetchWebTool = createTool({
@@ -36,5 +55,6 @@ export const openAiAgent = new Agent({
     model: openai("gpt-4o-mini"),
     tools: {
         fetchWeb: fetchWebTool,
+        extractLinks: extractLinks,
     }
 })
