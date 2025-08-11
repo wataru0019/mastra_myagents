@@ -1,8 +1,8 @@
-import { createOpenAI } from "@ai-sdk/openai";
+// import { createOpenAI } from "@ai-sdk/openai";
 import { openai } from "@ai-sdk/openai";
 import { Agent } from "@mastra/core";
-import { Memory } from '@mastra/memory';
-import { PgVector, PostgresStore } from '@mastra/pg';
+// import { Memory } from '@mastra/memory';
+// import { PgVector, PostgresStore } from '@mastra/pg';
 import { extractLinksFromUrl } from "../tools";
 import { createTool } from "@mastra/core";
 import { z } from "zod";
@@ -14,26 +14,26 @@ dotenv.config();
 // })
 
 // Supabaseの接続情報
-const SUPABASE_DATABASE_URL = process.env.DATABASE_URL; // Supabaseの接続URL
-// Supabaseを使用したMemory設定
-export const memory = new Memory({
-    // PostgreSQL（Supabase）ストレージ
-    storage: new PostgresStore({
-      connectionString: SUPABASE_DATABASE_URL,
-      schemaName: 'public',
-      max: 2, // Vercelでは少なめに
-      idleTimeoutMillis: 10000,
-      connectionTimeoutMillis: 5000,
-    }),
+// const SUPABASE_DATABASE_URL = process.env.DATABASE_URL; // Supabaseの接続URL
+// // Supabaseを使用したMemory設定
+// export const memory = new Memory({
+//     // PostgreSQL（Supabase）ストレージ
+//     storage: new PostgresStore({
+//       connectionString: SUPABASE_DATABASE_URL,
+//       schemaName: 'public',
+//       max: 2, // Vercelでは少なめに
+//       idleTimeoutMillis: 10000,
+//       connectionTimeoutMillis: 5000,
+//     }),
     
-    // pgvectorを使用したベクトルストレージ
-    vector: new PgVector({ 
-      connectionString: SUPABASE_DATABASE_URL,
-      max: 2,
-      idleTimeoutMillis: 10000,
-      connectionTimeoutMillis: 5000,
+//     // pgvectorを使用したベクトルストレージ
+//     vector: new PgVector({ 
+//       connectionString: SUPABASE_DATABASE_URL,
+//       max: 2,
+//       idleTimeoutMillis: 10000,
+//       connectionTimeoutMillis: 5000,
 
-    }),
+//     }),
     
     // Memory設定
     // options: {
@@ -87,8 +87,8 @@ export const memory = new Memory({
     // },
     
     // OpenAI埋め込みモデル
-    embedder: openai.embedding('text-embedding-3-small'),
-  });
+//     embedder: openai.embedding('text-embedding-3-small'),
+//   });
 
 const extractLinks = createTool({
     id: "extract-links",
