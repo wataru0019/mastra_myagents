@@ -16,9 +16,9 @@ export const mastra = new Mastra({
     deployer: new VercelDeployer()
 })
 
-export async function run() {
-    const response = await openAiAgent.generate('What is the capital of France?');
-    console.log(response.text);
-}
+// export async function run() {
+//     const response = await openAiAgent.generate('What is the capital of France?');
+//     console.log(response.text);
+// }
 
-run()
+// run()
