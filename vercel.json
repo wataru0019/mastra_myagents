@@ -1,0 +1,19 @@
+{
+    "functions": {
+      "api/**/*.js": {
+        "runtime": "nodejs20.x",
+        "maxDuration": 30
+      }
+    },
+    "headers": [
+      {
+        "source": "/api/(.*)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, max-age=0"
+          }
+        ]
+      }
+    ]
+  }
