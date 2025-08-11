@@ -19,6 +19,7 @@ export const mastra = new Mastra({
           allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         },
         // カスタムミドルウェアでリクエスト/レスポンスをログ
+        // ログチェック
         middleware: [
           async (c, next) => {
             const logger = mastra.getLogger();
