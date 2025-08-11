@@ -13,6 +13,36 @@ export const mastra = new Mastra({
         name: "mastra",
         level: "debug"
     }),
+    server: {
+        cors: {
+          origin: "*",
+          allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        },
+        // カスタムミドルウェアでリクエスト/レスポンスをログ
+        middleware: [
+          async (c, next) => {
+            const logger = mastra.getLogger();
+            const method = c.req.method;
+            const path = c.req.path;
+            
+            logger.debug(`Request started: ${method} ${path}`);
+            
+            try {
+              await next();
+              logger.debug(`Request completed: ${method} ${path} - Status: ${c.res.status}`);
+            } catch (error) {
+              logger.error(`Request failed: ${method} ${path}`, {
+                error: {
+                  message: error.message,
+                  stack: error.stack,
+                  name: error.name
+                }
+              });
+              throw error;
+            }
+          }
+        ]
+      },
     deployer: new VercelDeployer()
 })
 
