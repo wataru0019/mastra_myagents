@@ -1,6 +1,9 @@
+declare global {
+  // Enable Mastra telemetry flag on globalThis with proper typing
+  var ___MASTRA_TELEMETRY___: boolean;
+}
 globalThis.___MASTRA_TELEMETRY___ = true;
 import { Mastra } from "@mastra/core";
-import { VercelDeployer } from "@mastra/deployer-vercel";
 import { PinoLogger } from "@mastra/loggers";
 
 import { openAiAgent } from "./agents/openai_agent";
@@ -14,6 +17,8 @@ export const mastra = new Mastra({
         level: "debug"
     }),
     server: {
+        port: Number(process.env.PORT) || 4111,
+        host: "0.0.0.0",
         cors: {
           origin: "*",
           allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -32,19 +37,22 @@ export const mastra = new Mastra({
               await next();
               logger.debug(`Request completed: ${method} ${path} - Status: ${c.res.status}`);
             } catch (error) {
-              logger.error(`Request failed: ${method} ${path}`, {
-                error: {
-                  message: error.message,
-                  stack: error.stack,
-                  name: error.name
-                }
-              });
+              if (error instanceof Error) {
+                logger.error(`Request failed: ${method} ${path}`, {
+                  error: {
+                    message: error.message,
+                    stack: error.stack,
+                    name: error.name,
+                  },
+                });
+              } else {
+                logger.error(`Request failed: ${method} ${path}`, { error });
+              }
               throw error;
             }
           }
         ]
-      },
-    deployer: new VercelDeployer()
+      }
 })
 
 // export async function run() {
