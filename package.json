@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsx src/mastra/index.ts",
     "mastra:dev": "mastra dev",
-    "build": "mastra build"
+    "build": "mastra build",
+    "test-db": "node test-db.js"
   },
   "keywords": [],
   "author": "",
@@ -24,8 +25,15 @@
     "@ai-sdk/openai": "^2.0.1",
     "@mastra/core": "0.0.0-ai-v5-20250801192614",
     "@mastra/deployer-vercel": "^0.11.10",
+    "@mastra/loggers": "^0.10.6",
+    "@mastra/memory": "^0.12.1",
+    "@mastra/pg": "^0.13.3",
+    "@types/pg": "^8.15.5",
     "dotenv": "^17.2.1",
+    "drizzle-kit": "^0.31.4",
+    "drizzle-orm": "^0.44.4",
     "jsdom": "^26.1.0",
+    "pg": "^8.16.3",
     "zod": "^3.25.76"
   }
 }

@@ -3,8 +3,11 @@ import { registerHook, AvailableHooks } from '@mastra/core/hooks';
 import { TABLE_EVALS } from '@mastra/core/storage';
 import { checkEvalStorageFields } from '@mastra/core/utils';
 import { Agent, createTool, Mastra, generateEmptyFromSchema, Telemetry } from '@mastra/core';
-import { createOpenAI } from '@ai-sdk/openai';
-import { extractLinksFromUrl } from './tools/011924e6-0e0b-4063-8058-f56ae0f6355b.mjs';
+import { PinoLogger } from '@mastra/loggers';
+import { openai } from '@ai-sdk/openai';
+import { Memory } from '@mastra/memory';
+import { PgVector, PostgresStore } from '@mastra/pg';
+import { extractLinksFromUrl } from './tools/a2b6ad7d-71dd-4b64-a052-bd7e31c547f3.mjs';
 import { z, ZodFirstPartyTypeKind } from 'zod';
 import dotenv from 'dotenv';
 import crypto, { randomUUID } from 'crypto';
@@ -26,8 +29,62 @@ import { tools } from './tools.mjs';
 import 'jsdom';
 
 dotenv.config();
-const openai = createOpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+const SUPABASE_DATABASE_URL = process.env.DATABASE_URL;
+const memory = new Memory({
+  // PostgreSQL（Supabase）ストレージ
+  storage: new PostgresStore({
+    connectionString: SUPABASE_DATABASE_URL,
+    schemaName: "public"
+  }),
+  // pgvectorを使用したベクトルストレージ
+  vector: new PgVector({
+    connectionString: SUPABASE_DATABASE_URL
+  }),
+  // Memory設定
+  // options: {
+  //   // 直近メッセージ数
+  //   lastMessages: 15,
+  //   // セマンティック検索
+  //   semanticRecall: {
+  //     topK: 5,           // より多くの関連メッセージを取得
+  //     messageRange: 3,   // 前後3メッセージのコンテキスト
+  //     scope: 'resource', // ユーザー全体から検索
+  //   },
+  // ワーキングメモリ
+  //   workingMemory: {
+  //     enabled: true,
+  //         scope: 'resource', // ユーザー全体でメモリ共有
+  //         template: `# ユーザープロフィール
+  //   ## 基本情報
+  //   - 名前:
+  //   - 場所:
+  //   - 職業:
+  //   - 専門分野:
+  //   ## 設定・好み
+  //   - 言語: 日本語
+  //   - コミュニケーションスタイル:
+  //   - 学習スタイル:
+  //   - 興味のある分野:
+  //   ## 目標・プロジェクト
+  //   - 現在の目標:
+  //   - 取り組み中のプロジェクト:
+  //   - 学習中の技術:
+  //   ## セッション情報
+  //   - 最後の話題:
+  //   - 未解決の質問:
+  //   - 次回のフォローアップ:
+  //   `,
+  //   },
+  // スレッドタイトル自動生成
+  //   threads: {
+  //     generateTitle: {
+  //       model: openai('gpt-4o-mini'), // コスト効率的なモデル
+  //       instructions: 'ユーザーの最初のメッセージに基づいて、簡潔で分かりやすい日本語のタイトルを生成してください。',
+  //     },
+  //   },
+  // },
+  // OpenAI埋め込みモデル
+  embedder: openai.embedding("text-embedding-3-small")
 });
 const extractLinks = createTool({
   id: "extract-links",
@@ -73,14 +130,19 @@ const openAiAgent = new Agent({
   tools: {
     fetchWeb: fetchWebTool,
     extractLinks
-  }
+  },
+  memory
 });
 
 globalThis.___MASTRA_TELEMETRY___ = true;
 const mastra = new Mastra({
   agents: {
     openAiAgent
-  }
+  },
+  logger: new PinoLogger({
+    name: "mastra",
+    level: "debug"
+  })
 });
 async function run() {
   const response = await openAiAgent.generate("What is the capital of France?");
