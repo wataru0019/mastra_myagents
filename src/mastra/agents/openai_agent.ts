@@ -21,11 +21,18 @@ export const memory = new Memory({
     storage: new PostgresStore({
       connectionString: SUPABASE_DATABASE_URL,
       schemaName: 'public',
+      max: 2, // Vercelでは少なめに
+      idleTimeoutMillis: 10000,
+      connectionTimeoutMillis: 5000,
     }),
     
     // pgvectorを使用したベクトルストレージ
     vector: new PgVector({ 
       connectionString: SUPABASE_DATABASE_URL,
+      max: 2,
+      idleTimeoutMillis: 10000,
+      connectionTimeoutMillis: 5000,
+
     }),
     
     // Memory設定
