@@ -137,5 +137,5 @@ export const openAiAgent = new Agent({
         fetchWeb: fetchWebTool,
         extractLinks: extractLinks,
     },
-    memory: memory,
+    // memory: memory,
 })
