@@ -27,6 +27,10 @@ FROM node:20-slim AS runner
 ENV NODE_ENV=production
 WORKDIR /app
 
+# Railway環境変数を受け取るための宣言を追加
+ENV OPENAI_API_KEY=""
+
+
 # Copy only the production output and minimal files
 COPY --from=build /app/.mastra /app/.mastra
 COPY package.json pnpm-lock.yaml ./
