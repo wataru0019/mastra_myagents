@@ -19,6 +19,10 @@ COPY --from=deps /app/pnpm-lock.yaml /app/package.json ./
 COPY tsconfig.json ./
 COPY src ./src
 
+# Allow Railway to pass DATABASE_URL as a build secret
+ARG DATABASE_URL
+ENV DATABASE_URL=$DATABASE_URL
+
 # Build production bundle
 RUN pnpm run build
 

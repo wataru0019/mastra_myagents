@@ -1,5 +1,6 @@
 import { MDocument } from '@mastra/rag';
-import { embedMany, embed } from 'ai';
+// import { embedMany, embed } from 'ai';
+import { embed } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { PgVector } from '@mastra/pg';
 import dotenv from "dotenv";
@@ -109,33 +110,33 @@ const pgVector = new PgVector({
     connectionString: process.env.DATABASE_URL,
 })
 
-async function run() {
-    const read_text = await readTxtfile("./src/mastra/rag/anthropic_llms.txt");
-    const doc_text = MDocument.fromText(read_text);
-    const chunks = await doc_text.chunk({
-        strategy: "recursive",
-        maxSize: 512,
-        overlap: 50,
-        separators: ["\n"],
-    })
+// async function run() {
+//     const read_text = await readTxtfile("./src/mastra/rag/anthropic_llms.txt");
+//     const doc_text = MDocument.fromText(read_text);
+//     const chunks = await doc_text.chunk({
+//         strategy: "recursive",
+//         maxSize: 512,
+//         overlap: 50,
+//         separators: ["\n"],
+//     })
 
-    const { embeddings } = await embedMany({
-        model: openai.embedding('text-embedding-3-small'),
-        values: chunks.map(chunk => chunk.text),
-    })
+//     const { embeddings } = await embedMany({
+//         model: openai.embedding('text-embedding-3-small'),
+//         values: chunks.map(chunk => chunk.text),
+//     })
 
-    await pgVector.createIndex({
-        indexName: "file_embeddings",
-        dimension: 1536
-    })
+//     await pgVector.createIndex({
+//         indexName: "file_embeddings",
+//         dimension: 1536
+//     })
 
-    await pgVector.upsert({
-        indexName: "file_embeddings",
-        vectors: embeddings,
-        metadata: chunks.map(chunk => ({text: chunk.text}))
-    })
+//     await pgVector.upsert({
+//         indexName: "file_embeddings",
+//         vectors: embeddings,
+//         metadata: chunks.map(chunk => ({text: chunk.text}))
+//     })
 
-}
+// }
 
 export async function search(query: string) {
     const pgVector = new PgVector({
