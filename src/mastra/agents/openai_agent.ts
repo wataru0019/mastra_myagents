@@ -1,44 +1,47 @@
 // import { createOpenAI } from "@ai-sdk/openai";
 import { openai } from "@ai-sdk/openai";
 import { Agent } from "@mastra/core";
-// import { Memory } from '@mastra/memory';
-// import { PgVector, PostgresStore } from '@mastra/pg';
-import { extractLinksFromUrl } from "../tools";
+import { Memory } from '@mastra/memory';
+import { PgVector, PostgresStore } from '@mastra/pg';
+import { extractLinksFromUrl, searchAnthropicDocument } from "../tools";
 import { createTool } from "@mastra/core";
 import { z } from "zod";
 import dotenv from "dotenv";
 dotenv.config();
+
+import { testWorkflow } from "../workflows/test-flow";
+import { ragWorkflow } from "../workflows/rag-flow";
 
 // const openai = createOpenAI({
 //     apiKey: process.env.OPENAI_API_KEY,
 // })
 
 // Supabaseの接続情報
-// const SUPABASE_DATABASE_URL = process.env.DATABASE_URL; // Supabaseの接続URL
-// // Supabaseを使用したMemory設定
-// export const memory = new Memory({
-//     // PostgreSQL（Supabase）ストレージ
-//     storage: new PostgresStore({
-//       connectionString: SUPABASE_DATABASE_URL,
-//       schemaName: 'public',
-//       max: 2, // Vercelでは少なめに
-//       idleTimeoutMillis: 10000,
-//       connectionTimeoutMillis: 5000,
-//     }),
+const SUPABASE_DATABASE_URL = process.env.DATABASE_URL; // Supabaseの接続URL
+// Supabaseを使用したMemory設定
+export const memory = new Memory({
+    // PostgreSQL（Supabase）ストレージ
+    storage: new PostgresStore({
+      connectionString: SUPABASE_DATABASE_URL,
+      schemaName: 'public',
+      max: 2, // Vercelでは少なめに
+      idleTimeoutMillis: 10000,
+      connectionTimeoutMillis: 5000,
+    }),
     
-//     // pgvectorを使用したベクトルストレージ
-//     vector: new PgVector({ 
-//       connectionString: SUPABASE_DATABASE_URL,
-//       max: 2,
-//       idleTimeoutMillis: 10000,
-//       connectionTimeoutMillis: 5000,
+    // pgvectorを使用したベクトルストレージ
+    vector: new PgVector({ 
+      connectionString: SUPABASE_DATABASE_URL,
+      max: 2,
+      idleTimeoutMillis: 10000,
+      connectionTimeoutMillis: 5000,
 
-//     }),
+    }),
     
     // Memory設定
-    // options: {
-    //   // 直近メッセージ数
-    //   lastMessages: 15,
+    options: {
+      // 直近メッセージ数
+      lastMessages: 15,
       
     //   // セマンティック検索
     //   semanticRecall: {
@@ -47,9 +50,9 @@ dotenv.config();
     //     scope: 'resource', // ユーザー全体から検索
     //   },
       
-      // ワーキングメモリ
-    //   workingMemory: {
-    //     enabled: true,
+    //   ワーキングメモリ
+//       workingMemory: {
+//         enabled: true,
 //         scope: 'resource', // ユーザー全体でメモリ共有
 //         template: `# ユーザープロフィール
   
@@ -75,20 +78,20 @@ dotenv.config();
 //   - 未解決の質問:
 //   - 次回のフォローアップ:
 //   `,
-    //   },
+//       },
       
-      // スレッドタイトル自動生成
-    //   threads: {
-    //     generateTitle: {
-    //       model: openai('gpt-4o-mini'), // コスト効率的なモデル
-    //       instructions: 'ユーザーの最初のメッセージに基づいて、簡潔で分かりやすい日本語のタイトルを生成してください。',
-    //     },
-    //   },
-    // },
+    //   スレッドタイトル自動生成
+      threads: {
+        generateTitle: {
+          model: openai('gpt-4o-mini'), // コスト効率的なモデル
+          instructions: 'ユーザーの最初のメッセージに基づいて、簡潔で分かりやすい日本語のタイトルを生成してください。',
+        },
+      },
+    },
     
     // OpenAI埋め込みモデル
-//     embedder: openai.embedding('text-embedding-3-small'),
-//   });
+    embedder: openai.embedding('text-embedding-3-small'),
+  });
 
 const extractLinks = createTool({
     id: "extract-links",
@@ -132,10 +135,15 @@ export const openAiAgent = new Agent({
         An agent that uses OpenAI's API to generate responses.
         if the user asks for web content, use the fetchWeb tool to retrieve it.
         `,
-    model: openai("gpt-4o-mini"),
+    model: openai("gpt-5-nano-2025-08-07"),
     tools: {
         fetchWeb: fetchWebTool,
         extractLinks: extractLinks,
+        // searchAnthropicDocument: searchAnthropicDocument,
     },
-    // memory: memory,
+    workflows: {
+        testWorkflow: testWorkflow,
+        ragWorkflow: ragWorkflow,
+    },
+    memory: memory,
 })

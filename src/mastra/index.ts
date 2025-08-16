@@ -7,10 +7,16 @@ import { Mastra } from "@mastra/core";
 import { PinoLogger } from "@mastra/loggers";
 
 import { openAiAgent } from "./agents/openai_agent";
+import { testWorkflow } from "./workflows/test-flow";
+import { ragWorkflow } from "./workflows/rag-flow";
 
 export const mastra = new Mastra({
     agents: {
         openAiAgent: openAiAgent
+    },
+    workflows: {
+        testWorkflow: testWorkflow,
+        ragWorkflow: ragWorkflow
     },
     logger: new PinoLogger({
         name: "mastra",

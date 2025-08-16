@@ -1,4 +1,23 @@
 import { JSDOM } from 'jsdom';
+import { createTool } from '@mastra/core';
+import { z } from 'zod';
+
+import { search } from '../rag/test-rag';
+
+export const searchAnthropicDocument = createTool({
+  id: 'searchAnthropicDocument',
+  description: 'Anthropicに関連するドキュメントのリンク先を検索するツールである。',
+  inputSchema: z.object({
+    query: z.string().describe('検索クエリ'),
+  }),
+  outputSchema: z.object({
+    results: z.array(z.string().describe("chunkのテキスト"))
+  }),
+  execute: async ({ context }) => {
+    const results =  await search(context.query)
+    return { results: results };
+  },
+})
 
 /**
  * 指定されたURLからすべてのリンクを抽出する
